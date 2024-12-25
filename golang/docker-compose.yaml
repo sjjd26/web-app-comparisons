@@ -1,0 +1,77 @@
+services:
+  postgres:
+    build:
+      context: ./Database
+      dockerfile: Dockerfile
+    container_name: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: authentication
+    ports:
+      - "5432:5432"
+    networks:
+      - authentication-app
+
+  flyway:
+    image: flyway/flyway:latest
+    container_name: flyway-migrator
+    depends_on:
+      - postgres
+    command: -url=jdbc:postgresql://postgres:5432/authentication -user=postgres -password=postgres -locations=filesystem:/flyway/sql -validateMigrationNaming=true migrate
+    volumes:
+      - ./Database/Migrations:/flyway/sql
+    networks:
+      - authentication-app
+
+  pgbouncer:
+    build:
+      context: ./pgbouncer
+      dockerfile: Dockerfile
+    container_name: pgbouncer
+    depends_on:
+      - postgres
+    ports:
+    - "6432:6432"
+    networks:
+      - authentication-app
+
+  auth-api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: auth-api
+    depends_on:
+      - postgres
+      - pgbouncer
+    ports:
+      - "8000:8000"
+    networks:
+      - authentication-app
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@pgbouncer:6432/authentication
+      PGPASSWORD: postgres
+    develop:  
+      watch:
+        - action: rebuild
+          path: ./app
+          target: ./app
+
+  pgadmin:
+    build:
+      context: ./pgAdmin
+      dockerfile: Dockerfile
+    container_name: pgadmin
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - authentication-app
+
+volumes:
+  postgres-data:
+
+networks:
+  authentication-app:
