@@ -10,30 +10,30 @@ import (
 )
 
 type PgxDatabaseContext struct {
-	dbConfig *pgx.ConnConfig
-	db       *pgx.Conn
+	connConfig *pgx.ConnConfig
+	conn       *pgx.Conn
 }
 
 func NewPgxDatabaseContext(connectionString string) *PgxDatabaseContext {
-	dbConfig, err := pgx.ParseConfig(connectionString)
+	connConfig, err := pgx.ParseConfig(connectionString)
 	if err != nil {
-		log.Fatalf("Unable to parse DATABASE_URL: %v\n", err)
+		log.Fatalf("unable to parse DATABASE_URL: %v\n", err)
 	}
 
-	db, err := pgx.ConnectConfig(context.Background(), dbConfig)
+	conn, err := pgx.ConnectConfig(context.Background(), connConfig)
 	if err != nil {
-		log.Fatalf("Unable to connect to the database: %v\n", err)
+		log.Fatalf("unable to connect to the database: %v\n", err)
 	}
 
 	return &PgxDatabaseContext{
-		db:       db,
-		dbConfig: dbConfig,
+		conn:       conn,
+		connConfig: connConfig,
 	}
 }
 
 func (db *PgxDatabaseContext) Close() error {
-	if db.db != nil {
-		db.db.Close(context.Background())
+	if db.conn != nil {
+		db.conn.Close(context.Background())
 		return nil
 	} else {
 		return errors.New("database connection is not open")
@@ -41,7 +41,25 @@ func (db *PgxDatabaseContext) Close() error {
 }
 
 func (db *PgxDatabaseContext) InsertUser(ctx context.Context, user models.User) (int, error) {
-	// TODO: Implement this method
-	log.Println("CreateUser method not implemented")
-	return 0, nil
+	query := `
+		INSERT INTO users (email, password_hash, salt, created_at, updated_at) 
+		VALUES ($1, $2, $3, $4, $5) 
+		RETURNING id
+	`
+	var userId int
+	err := db.conn.QueryRow(
+		ctx,
+		query,
+		user.Email,
+		user.PasswordHash,
+		user.Salt,
+		user.CreatedAt,
+		user.UpdatedAt,
+	).Scan(&userId)
+
+	if err != nil {
+		return -1, err
+	}
+
+	return userId, nil
 }

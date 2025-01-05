@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"math/big"
 	"time"
 )
@@ -36,7 +37,8 @@ func createPasswordHash(password string, salt string) (string, error) {
 	if err != nil {
 		return "", errors.New("failed to hash password: " + err.Error())
 	}
-	return string(hash.Sum(nil)), nil
+	hashBytes := hash.Sum(nil)
+	return fmt.Sprintf("%x", hashBytes), nil
 }
 
 func NewUser(email string, password string) (User, error) {
