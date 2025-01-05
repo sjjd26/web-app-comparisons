@@ -40,8 +40,8 @@ func (db *PgxDatabaseContext) Close() error {
 	}
 }
 
-func (db *PgxDatabaseContext) CreateUser(ctx context.Context, email string, password string) (models.User, error) {
+func (db *PgxDatabaseContext) InsertUser(ctx context.Context, user models.User) (int, error) {
 	// TODO: Implement this method
 	log.Println("CreateUser method not implemented")
-	return models.User{}, nil
+	return 0, nil
 }

@@ -7,5 +7,5 @@ import (
 
 type DatabaseContext interface {
 	Close() error
-	CreateUser(ctx context.Context, email string, password string) (models.User, error)
+	InsertUser(ctx context.Context, user models.User) (int, error)
 }
