@@ -53,11 +53,14 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@pgbouncer:6432/authentication
       PGPASSWORD: postgres
+    volumes:
+      - ./app/logs:/app/logs
     develop:  
       watch:
         - action: rebuild
           path: ./app
           target: ./app
+          ignore: [ "logs/*" ]
 
   pgadmin:
     build:

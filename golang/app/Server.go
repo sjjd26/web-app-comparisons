@@ -22,16 +22,19 @@ func main() {
 	dbContext := database.NewPgxContext(connectionString)
 	defer dbContext.Close()
 
+	mux := http.NewServeMux()
+
 	// Start the server
 	authenticationService := AuthenticationService{dbContext: dbContext}
-	authenticationService.RegisterHandlers()
+	authenticationService.RegisterHandlers(mux)
 
-	http.Handle("/", middleware.LoggingMiddleware(http.DefaultServeMux))
-	authenticationService.StartServer(PORT_NUMBER)
+	loggedMux := middleware.LoggingMiddleware(mux)
+
+	authenticationService.StartServer(&loggedMux, PORT_NUMBER)
 }
 
 func setupLogging() {
-	logFile, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	logFile, err := os.OpenFile("/app/logs/app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatalf("Failed to open log file: %v", err)
 	}
@@ -44,7 +47,7 @@ func setupLogging() {
 		logOutput = io.MultiWriter(os.Stdout, logFile)
 	default: // development
 		// Log everything to stdout
-		logOutput = os.Stdout
+		logOutput = io.MultiWriter(os.Stdout, logFile)
 	}
 
 	log.SetOutput(logOutput)

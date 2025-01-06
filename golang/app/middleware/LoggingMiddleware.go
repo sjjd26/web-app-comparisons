@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -13,6 +14,8 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(writer, request)
 
-		log.Printf("Completed %s %s in %v", request.Method, request.URL.Path, time.Since(start))
+		fmt.Printf("%v", writer.Header().Get("Status"))
+
+		log.Printf("Completed %s %s in %v, status code %v", request.Method, request.URL.Path, time.Since(start), writer.Header().Get("Status"))
 	})
 }
