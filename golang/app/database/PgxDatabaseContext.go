@@ -1,20 +1,20 @@
-package databasecontext
+package database
 
 import (
 	"context"
 	"errors"
 	"log"
-	models "web-app/auth-api/Models"
+	"web-app/auth-api/models"
 
 	"github.com/jackc/pgx/v5"
 )
 
-type PgxDatabaseContext struct {
+type PgxContext struct {
 	connConfig *pgx.ConnConfig
 	conn       *pgx.Conn
 }
 
-func NewPgxDatabaseContext(connectionString string) *PgxDatabaseContext {
+func NewPgxContext(connectionString string) *PgxContext {
 	connConfig, err := pgx.ParseConfig(connectionString)
 	if err != nil {
 		log.Fatalf("unable to parse DATABASE_URL: %v\n", err)
@@ -25,13 +25,13 @@ func NewPgxDatabaseContext(connectionString string) *PgxDatabaseContext {
 		log.Fatalf("unable to connect to the database: %v\n", err)
 	}
 
-	return &PgxDatabaseContext{
+	return &PgxContext{
 		conn:       conn,
 		connConfig: connConfig,
 	}
 }
 
-func (db *PgxDatabaseContext) Close() error {
+func (db *PgxContext) Close() error {
 	if db.conn != nil {
 		db.conn.Close(context.Background())
 		return nil
@@ -40,7 +40,7 @@ func (db *PgxDatabaseContext) Close() error {
 	}
 }
 
-func (db *PgxDatabaseContext) InsertUser(ctx context.Context, user models.User) (int, error) {
+func (db *PgxContext) InsertUser(ctx context.Context, user models.User) (int, error) {
 	query := `
 		INSERT INTO users (email, password_hash, salt, created_at, updated_at) 
 		VALUES ($1, $2, $3, $4, $5) 

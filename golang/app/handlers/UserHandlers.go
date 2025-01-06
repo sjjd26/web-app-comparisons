@@ -5,17 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	databasecontext "web-app/auth-api/DatabaseContext"
-	models "web-app/auth-api/Models"
+	"web-app/auth-api/database"
+	"web-app/auth-api/models"
 )
 
 type UserHandler struct {
-	databaseContext databasecontext.DatabaseContext
+	dbContext database.DbContext
 }
 
-func NewUserHandler(databaseContext databasecontext.DatabaseContext) *UserHandler {
+func NewUserHandler(dbContext database.DbContext) *UserHandler {
 	return &UserHandler{
-		databaseContext: databaseContext,
+		dbContext: dbContext,
 	}
 }
 
@@ -34,7 +34,7 @@ func (handler UserHandler) RegisterNewUser(writer http.ResponseWriter, request *
 		return
 	}
 
-	newUserId, err := handler.databaseContext.InsertUser(context.Background(), newUser)
+	newUserId, err := handler.dbContext.InsertUser(context.Background(), newUser)
 	if err != nil {
 		http.Error(writer, "failed to create user", http.StatusInternalServerError)
 		return

@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	databasecontext "web-app/auth-api/DatabaseContext"
-	handlers "web-app/auth-api/Handlers"
+	"web-app/auth-api/database"
+	"web-app/auth-api/handlers"
 )
 
 type AuthenticationService struct {
-	databaseContext databasecontext.DatabaseContext
+	dbContext database.DbContext
 }
 
 func (service AuthenticationService) RegisterHandlers() {
 	// Users
-	userHandler := handlers.NewUserHandler(service.databaseContext)
+	userHandler := handlers.NewUserHandler(service.dbContext)
 	http.HandleFunc("POST /register", userHandler.RegisterNewUser)
 }
 
